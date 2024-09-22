@@ -11,5 +11,7 @@ CreatorRouter.route('/add-course')
 CreatorRouter.route('/courses')
 .get(validateCreatorAuth,creatorsCourse);
 
+CreatorRouter.route('/course')
+// .patch(validateCreatorAuth,);
 
 module.exports = CreatorRouter;

@@ -10,10 +10,12 @@ const PORT = process.env.PORT || 3000;
 
 const AuthRouter = require('./src/router/authRoute');
 const CreatorRouter = require('./src/router/creatorsRoute');
-const {getAllCourses} = require('./src/controller/courseControl')
+const {getAllCourses} = require('./src/controller/courseControl');
+const {createUser,findOne} = require('./src/model/users')
 require('./src/config/passport');
+
 app.use(cors({
-    origin:'https://localhost:4200',
+    origin:'https://c8bltjmv-4200.inc1.devtunnels.ms',
     credentials:true
 }))
 app.use(express.urlencoded({ extended: true }))
@@ -28,10 +30,11 @@ app.use(session({
 app.get('/',(req,res)=>{
     res.status(200).send("Welcome To OLP Server :)");
 })
-
+//auth rout
 app.use('/auth',AuthRouter);
+//creator rout
 app.use('/creator',CreatorRouter);
-
+//get all courses
 app.get('/all-course',getAllCourses);
 
 
@@ -44,22 +47,29 @@ app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'em
 // Google callback route
 app.get('/auth/google/callback', 
   passport.authenticate('google', { failureRedirect: '/' }),
-  function(req, res) {
+  async function(req, res) {
     // Successful authentication, redirect to frontend
-    console.log(req.user);
+    const user = req.user;
+    const userData =  await findOne(user.useremail);
+    if (!userData) {
+      createUser(user);
+    }else if(userData.usertype){
+      user.usertype = userData.usertype;
+    }
     
-    res.redirect('http://localhost:4200/dashboard');
+    const token = btoa(JSON.stringify(user));
+    res.redirect(301,`https://c8bltjmv-4200.inc1.devtunnels.ms/google-auth/${token}`);
   }
 );
 
 // // Route to check if user is authenticated
-app.get('/auth/check', (req, res) => {
-  if (req.isAuthenticated()) {
-    res.json(req.user);
-  } else {
-    res.status(401).json({ message: 'Unauthorized' });
-  }
-});
+// app.get('/auth/check', (req, res) => {
+//   if (req.isAuthenticated()) {
+//     res.json(req.user);
+//   } else {
+//     res.status(401).json({ message: 'Unauthorized' });
+//   }
+// });
 
 
 app.listen(PORT,()=>{

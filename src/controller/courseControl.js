@@ -1,13 +1,15 @@
 const {insertData,fetchAllCourse, fetchCreatorsCourse} =require('../model/courses');
 const jwt = require('jsonwebtoken');
+
  async function creatorAddCourse (req,res){
-    const user = jwt.verify(req.headers['auth-token'],process.env.jwt_secret);
-
+    const user = jwt.verify(req.cookies.token,process.env.jwt_secret);
+    
     const coursedata =req.body;
-    coursedata.creatorId = user.id;
-    coursedata.creatorName = user.name;
 
-    const result = await insertData(data);
+    coursedata.creatorid = user.id;
+    coursedata.creatorname = user.username;
+
+    const result = await insertData(coursedata);
     res.status(200).json({status:'success',message:'Course created successfully'});
 }
 

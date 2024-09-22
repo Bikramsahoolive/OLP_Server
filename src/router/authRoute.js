@@ -1,6 +1,6 @@
 const express = require('express');
 const AuthRouter = express.Router();
-const {createUser,getUsers,login,findOneUser,updatePassword,logout} = require('../controller/authControl');
+const {createUser,getUsers,login,googleLogin,findOneUser,updatePassword,logout,checkSession} = require('../controller/authControl');
 
 AuthRouter.route('/register')
 .post(createUser);
@@ -10,6 +10,12 @@ AuthRouter.route('/users')
 
 AuthRouter.route('/login')
 .post(login);
+
+AuthRouter.route('/google-login')
+.post(googleLogin);
+
+AuthRouter.route('/check-session')
+.get(checkSession);
 
 AuthRouter.route('/verify')
 .post(findOneUser);

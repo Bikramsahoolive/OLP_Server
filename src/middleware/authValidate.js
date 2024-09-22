@@ -4,8 +4,9 @@ const jwt = require('jsonwebtoken');
 
 async function validateCreatorAuth (req,res,next){
     try {
+        
         const userData = jwt.verify(req.cookies.token,process.env.jwt_secret);
-        if(userData.type ==='creator'){
+        if(userData.usertype ==='creator'){
             next();
         }else{
             res.status(400).json({status:'failure',message:'Creator authentication required.'});

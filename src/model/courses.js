@@ -1,15 +1,66 @@
+const firebase = require('../config/firebase');
+const { getStorage, ref, uploadString, getDownloadURL, deleteObject } = require("firebase/storage");
 const {pool} = require('../config/pg');
 
+const storage = getStorage(firebase);
+
+
+
+
+async function getFileUrl(data,format){
+    try {
+        if (format === "img"){
+            if(data!=='null'){
+            const Filename = `banner_${Date.now()}`;
+            // const photoFile = data;
+            // data.photoFileName = photoFilename;
+            const storageRef2 = ref(storage, `banner/${Filename}`);
+            const snapshot2 = await uploadString(storageRef2, data, 'data_url');
+            const url = await getDownloadURL(snapshot2.ref);
+            const urlData = {filename:Filename,url:url}
+            return urlData;
+            }else{
+                return null;
+            }
+        }else if(format === "pdf"){
+            if(data!=='null'){
+                const Filename = `pdf_${Date.now()}`;
+                // const File = data;
+                // data.photoFileName = photoFilename;
+                const storageRef2 = ref(storage, `pdf/${Filename}`);
+                const snapshot2 = await uploadString(storageRef2, data, 'data_url');
+                const url = await getDownloadURL(snapshot2.ref);
+                const urlData = {filename:Filename,url:url};
+                return urlData;
+            }else{
+                return null;
+            }
+        }
+    } catch (error) {
+        console.log(error);
+        
+    }
+    
+}
+
 async function insertData(data){
-    const {creatorId,creatorName,courseType,courseName,description,contentUrl}=data;
+    // console.log(data);
+    let {creatorid,creatorname,category,coursename,description,videolink,bannerimage,pdf,slides} = data;
+
+    const pdfurl =await getFileUrl(pdf,'pdf');
+    const imgurl =await getFileUrl(bannerimage,'img');
+
+    
+    if(pdfurl!==null)pdf = JSON.stringify(pdfurl);
+    if(imgurl!==null)bannerimage = JSON.stringify(imgurl);
+    
+    
     const client =await pool.connect();
     try {
-        const query = `INSERT INTO courses (creatorid, creatorname, coursetype, coursename, description, contenturl) VALUES ($1,$2,$3,$4) RETURNING *;`;
-        const values = [creatorId,creatorName,courseType,courseName,description,contentUrl];
+        const query = `INSERT INTO courses (creatorid,creatorname,category,coursename,description,videolink,bannerimage,pdf,slides) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *;`;
+        const values = [creatorid,creatorname,category,coursename,description,videolink,bannerimage,pdf,slides];
         const result = await client.query(query,values);
-        console.log(result.rows[0]);
-
-        
+        console.log(result.rows[0]);    
     } catch (error) {
         console.log(error);
         

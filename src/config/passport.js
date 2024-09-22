@@ -12,11 +12,11 @@ passport.deserializeUser(function(user, done) {
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: "http://localhost:3000/auth/google/callback"
+    callbackURL: "https://c8bltjmv-3000.inc1.devtunnels.ms/auth/google/callback"
   },
   function(accessToken, refreshToken, profile, done) {
     // Use profile information to verify the user in your database
-    const user = {name:profile.displayName,email:profile.emails[0].value};
+    const user = {username:profile.displayName,usertype:'NA',useremail:profile.emails[0].value,password:'GoogleCredential'};
     
     return done(null, user);
   }
