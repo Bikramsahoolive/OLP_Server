@@ -54,18 +54,65 @@ async function insertData(data){
     if(pdfurl!==null)pdf = JSON.stringify(pdfurl);
     if(imgurl!==null)bannerimage = JSON.stringify(imgurl);
     
-    
     const client =await pool.connect();
+    
     try {
+        
         const query = `INSERT INTO courses (creatorid,creatorname,category,coursename,description,videolink,bannerimage,pdf,slides) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *;`;
         const values = [creatorid,creatorname,category,coursename,description,videolink,bannerimage,pdf,slides];
         const result = await client.query(query,values);
-        console.log(result.rows[0]);    
+        return result.rows[0];    
     } catch (error) {
         console.log(error);
         
     }finally{
         client.release();
+    }
+}
+
+async function insertExamData(data){
+
+    const{courseid,creatorid,quiz,assignment} = data;
+    const client =await pool.connect();
+    try {
+        
+        const query = `INSERT INTO exams (courseid,creatorid,quiz,assignment) VALUES ($1,$2,$3,$4) RETURNING *;`;
+        const values = [courseid,creatorid,quiz,assignment];
+        const result = await client.query(query,values);
+        return result.rows[0];    
+    } catch (error) {
+        console.log(error);
+        
+    }finally{
+        client.release();
+    }
+}
+
+async function fetchQuizOfCourseId(id){
+
+    try {
+        const q = 'SELECT quiz FROM exams WHERE courseid = $1;'
+        const values = [id];
+        const result = await pool.query(q,values);
+        return result.rows[0];
+        
+    } catch (error) {
+        console.log(error);
+        
+    }
+}
+
+async function fetchAssignmentOfCourseId(id){
+    
+    try {
+        const q = 'SELECT assignment FROM exams WHERE courseid = $1;'
+        const values = [id];
+        const result = await pool.query(q,values);
+        return result.rows[0];
+        
+    } catch (error) {
+        console.log(error);
+        
     }
 }
 
@@ -76,6 +123,7 @@ async function fetchAllCourse(){
         return result.rows;
         
     } catch (error) {
+        console.log(error);
         
     }
 }
@@ -92,4 +140,4 @@ async function fetchCreatorsCourse (id){
     }
 }
 
-module.exports= {insertData,fetchAllCourse,fetchCreatorsCourse};
+module.exports= {insertData,fetchAllCourse,fetchCreatorsCourse,insertExamData,fetchQuizOfCourseId,fetchAssignmentOfCourseId};
