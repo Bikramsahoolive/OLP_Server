@@ -131,13 +131,28 @@ async function fetchAllCourse(){
 async function fetchCreatorsCourse (id){
     try {
         
-        const q = `SELECT * FROM users where id = $1;`
+        const q = `SELECT * FROM courses where creatorid = $1;`
        values =[id]
        const {rows} = await pool.query(q,values);
        return rows;
     } catch (error) {
+        console.log(error);
         
     }
 }
 
-module.exports= {insertData,fetchAllCourse,fetchCreatorsCourse,insertExamData,fetchQuizOfCourseId,fetchAssignmentOfCourseId};
+async function fetchSingleCourse (id){
+    try {
+        
+        const q = `SELECT * FROM courses where id = $1;`
+       values =[id]
+       const {rows} = await pool.query(q,values);
+       return rows[0];
+    } catch (error) {
+        console.log(error);
+        
+    }
+}
+
+
+module.exports= {insertData,fetchAllCourse,fetchCreatorsCourse,insertExamData,fetchQuizOfCourseId,fetchAssignmentOfCourseId,fetchSingleCourse};

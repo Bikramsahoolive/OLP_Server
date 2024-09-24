@@ -6,9 +6,8 @@ exports.login = async(req,res)=>{
     try{
         const {useremail,usertype,password } = req.body;
         // console.log(usertype)   
-        const user = await findOne(useremail);
-        // console.log(user);
-        
+        const user = await findUser(useremail,usertype);
+
     if (!user) return res.status(400).json({ message: "User not found" });
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -19,7 +18,7 @@ exports.login = async(req,res)=>{
         
     res.cookie('token',token,{ httpOnly:true, secure:true,sameSite: 'None'})
 
-    res.status(200).json({ message: "Login successful", user});
+    res.status(200).json(user);
 
     }catch(err){
         res.status(500).json({err})
@@ -32,8 +31,7 @@ exports.googleLogin = async (req,res)=>{
         const user = await findOne(userData.useremail);
         
     if (user.usertype=='NA'){
-        const data = await updateUsertype(userData.usertype,userData.useremail)
-        console.log(data);
+        const data = await updateUsertype(userData.usertype,userData.useremail);
         
     }
 
@@ -42,7 +40,7 @@ exports.googleLogin = async (req,res)=>{
         
     res.cookie('token',token,{ httpOnly:true, secure:true,sameSite: 'None'})
 
-    res.status(200).json({ message: "Login successful", user});
+    res.status(200).json(user);
 
     }catch(err){
         res.status(500).json({err})
@@ -114,7 +112,8 @@ exports.checkSession = (req,res)=>{
     try {
         const user = jwt.verify(req.cookies.token,process.env.jwt_secret);
         if(user){
-            res.status(200).json({status:true,message:'Session is active.'});
+            user.isActive = true;
+            res.status(200).json(user);
         }else {
             res.status(400).json({status:false,message:'Session is expired.'});
         }

@@ -1,4 +1,4 @@
-const {insertData,fetchAllCourse, fetchCreatorsCourse,insertExamData,fetchQuizOfCourseId,fetchAssignmentOfCourseId} =require('../model/courses');
+const {insertData,fetchAllCourse, fetchCreatorsCourse,insertExamData,fetchQuizOfCourseId,fetchAssignmentOfCourseId,fetchSingleCourse} =require('../model/courses');
 const jwt = require('jsonwebtoken');
 
  async function creatorAddCourse (req,res){
@@ -64,5 +64,21 @@ async function getAssignmentQuestions(req,res){
     }
 }
 
+async function getSingleCourse(req,res){
+    const id = req.params.id;
 
-module.exports ={creatorAddCourse,getAllCourses,creatorsCourse,getQuizQuestions,getAssignmentQuestions};
+
+    let result = await fetchSingleCourse(id);
+    
+    if(result){
+    res.status(200).json(result);
+    }else{
+        res.status(400).send('No data found.');
+    }
+    
+
+}
+
+
+module.exports ={creatorAddCourse,getAllCourses,
+    creatorsCourse,getQuizQuestions,getAssignmentQuestions,getSingleCourse};
