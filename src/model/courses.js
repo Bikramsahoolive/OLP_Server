@@ -154,5 +154,16 @@ async function fetchSingleCourse (id){
     }
 }
 
+async function deleteOne(id){
+    try {
+        const q = `DELETE FROM courses WHERE id = $1`;
+        const value = [id];
+        const result =await  pool.query(q,value);
+        return result.rowCount;
+    } catch (error) {
+        console.log(error);
+        
+    }
+}
 
-module.exports= {insertData,fetchAllCourse,fetchCreatorsCourse,insertExamData,fetchQuizOfCourseId,fetchAssignmentOfCourseId,fetchSingleCourse};
+module.exports= {insertData,fetchAllCourse,fetchCreatorsCourse,insertExamData,fetchQuizOfCourseId,fetchAssignmentOfCourseId,fetchSingleCourse,deleteOne};

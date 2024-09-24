@@ -1,4 +1,4 @@
-const {insertData,fetchAllCourse, fetchCreatorsCourse,insertExamData,fetchQuizOfCourseId,fetchAssignmentOfCourseId,fetchSingleCourse} =require('../model/courses');
+const {insertData,fetchAllCourse, fetchCreatorsCourse,insertExamData,fetchQuizOfCourseId,fetchAssignmentOfCourseId,fetchSingleCourse,deleteOne} =require('../model/courses');
 const jwt = require('jsonwebtoken');
 
  async function creatorAddCourse (req,res){
@@ -79,6 +79,19 @@ async function getSingleCourse(req,res){
 
 }
 
+async function deleteCourse(req,res){
+
+    try {
+        const response = await deleteOne(req.params.id);
+        res.status(200).json({status:'success',message:'Course Deleted Successfully.'});
+    } catch (error) {
+        console.log(error);
+        res.status(500).send(error);
+        
+    }
+
+}
+
 
 module.exports ={creatorAddCourse,getAllCourses,
-    creatorsCourse,getQuizQuestions,getAssignmentQuestions,getSingleCourse};
+    creatorsCourse,getQuizQuestions,getAssignmentQuestions,getSingleCourse,deleteCourse};

@@ -9,7 +9,7 @@ CoursesRouter.route('/')
 CoursesRouter.route('/:id')
 .get(validateStudentAuth,getSingleCourse);
 
-CoursesRouter.route('/quizs/:id')
+CoursesRouter.route('/quizes/:id')
 .get(validateStudentAuth,getQuizQuestions);
 
 CoursesRouter.route('/assignments/:id')
