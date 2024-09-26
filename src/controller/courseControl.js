@@ -8,8 +8,10 @@ const jwt = require('jsonwebtoken');
 
     coursedata.creatorid = user.id;
     coursedata.creatorname = user.username;
+    coursedata.totalenrolments = 0;
 
     const result = await insertData(coursedata);
+    
     const examData = {
         courseid:result.id,
         creatorid:user.id,
@@ -42,7 +44,6 @@ async function getQuizQuestions(req,res){
 
     try {
         const result =await fetchQuizOfCourseId(req.params.id);
-        console.log(result);
         res.status(200).json(result);
         
     } catch (error) {
@@ -55,7 +56,6 @@ async function getAssignmentQuestions(req,res){
 
     try {
         const result =await fetchAssignmentOfCourseId(req.params.id);
-        console.log(result);
         res.status(200).json(result);
         
     } catch (error) {
