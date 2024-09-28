@@ -1,100 +1,101 @@
 require('dotenv').config();
-const {insertEnrollData,findAllEnrolledProgressData,fetchProgressData,updateLearningData,updateQuizData,updateAssignmentData,deleteProgressData} =require('../model/student');
-const {fetchSingleCourse,fetchExamData,updateTotalEnrollment} = require('../model/courses');
-const{fetchAllCourse} = require('../model/courses'); 
+const { insertEnrollData, findAllEnrolledProgressData, fetchProgressData, updateLearningData, updateQuizData,
+    updateAssignmentData, deleteProgressData } = require('../model/student');
+const { fetchSingleCourse, fetchExamData, updateTotalEnrollment } = require('../model/courses');
+const { fetchAllCourse } = require('../model/courses');
 const jwt = require('jsonwebtoken');
 
 
 
-async function nonEnrolledCourses(req,res){
+async function nonEnrolledCourses(req, res) {
 
     try {
-        const user = jwt.verify(req.cookies.token,process.env.jwt_secret);
+        const user = jwt.verify(req.cookies.token, process.env.jwt_secret);
 
-        const enrollmentData =await findAllEnrolledProgressData(user.id);
+        const enrollmentData = await findAllEnrolledProgressData(user.id);
 
         const allCoursesData = await fetchAllCourse();
         const enrolledCourseIds = [];
         let response = [];
 
-        
-            enrollmentData.forEach((f)=>{
-                if(f.studentid === user.id){
-                    enrolledCourseIds.push(f.courseid);
-                }
-            });
 
-            allCoursesData.forEach((e)=>{
-                if(!enrolledCourseIds.includes(e.id)){
-                    response.push(e);
-                }
-            });
-            
-            // console.log(response);
+        enrollmentData.forEach((f) => {
+            if (f.studentid === user.id) {
+                enrolledCourseIds.push(f.courseid);
+            }
+        });
 
-            res.status(200).send(response);
-        
+        allCoursesData.forEach((e) => {
+            if (!enrolledCourseIds.includes(e.id)) {
+                response.push(e);
+            }
+        });
+
+        // console.log(response);
+
+        res.status(200).send(response);
+
     } catch (error) {
         console.log(error);
         res.status(500).send(error);
     }
 }
 
-async function enrollStudent(req,res){
+async function enrollStudent(req, res) {
     try {
         const courseId = req.params.id
         const courseData = await fetchSingleCourse(courseId);
 
-        const examData = await fetchExamData(courseData.creatorid,courseData.id);
-        
+        const examData = await fetchExamData(courseData.creatorid, courseData.id);
+
         let quizStatus = true;
         let assignmentStatus = true;
 
-        if(examData[0].quiz['question'].length>0) quizStatus = false;
-        if(examData[0].assignment['question'].length>0) assignmentStatus = false;
-        
-        const user = jwt.verify(req.cookies.token,process.env.jwt_secret);
+        if (examData[0].quiz['question'].length > 0) quizStatus = false;
+        if (examData[0].assignment['question'].length > 0) assignmentStatus = false;
 
-    let enrollData ={
-        courseid:courseId,
-        creatorid:courseData.creatorid,
-        studentid:user.id,
-        enrollmentstatus:true,
-        learningstatus:false,
-        quizstatus:quizStatus,
-        quizresult:0,
-        assignmentstatus:assignmentStatus,
-        assignmentresult:0
-    };
+        const user = jwt.verify(req.cookies.token, process.env.jwt_secret);
 
-   const result = await insertEnrollData(enrollData);
-   updateTotalEnrollment(++courseData.totalenrolments,courseData.id);
-    res.status(200).json({status:'sucess',message:'Course enrolled successfully.'});
+        let enrollData = {
+            courseid: courseId,
+            creatorid: courseData.creatorid,
+            studentid: user.id,
+            enrollmentstatus: true,
+            learningstatus: false,
+            quizstatus: quizStatus,
+            quizresult: 0,
+            assignmentstatus: assignmentStatus,
+            assignmentresult: 0
+        };
+
+        const result = await insertEnrollData(enrollData);
+        updateTotalEnrollment(++courseData.totalenrolments, courseData.id);
+        res.status(200).json({ status: 'sucess', message: 'Course enrolled successfully.' });
     } catch (error) {
         console.log(error);
-        
+
     }
 }
 
-async function getAllEnrolledData(req,res){
+async function getAllEnrolledData(req, res) {
     try {
-        const user = jwt.verify(req.cookies.token,process.env.jwt_secret);
+        const user = jwt.verify(req.cookies.token, process.env.jwt_secret);
 
-        const enrollmentData =await findAllEnrolledProgressData(user.id);
+        const enrollmentData = await findAllEnrolledProgressData(user.id);
 
         const allCoursesData = await fetchAllCourse();
 
         let response = [];
-        allCoursesData.forEach((e)=>{
-            enrollmentData.forEach((f)=>{
-                if(e.id === f.courseid){
+        allCoursesData.forEach((e) => {
+            enrollmentData.forEach((f) => {
+                if (e.id === f.courseid) {
                     response.push(e);
                 }
             })
         })
 
         // console.log(response);
-        
+
         res.status(200).send(response);
     } catch (error) {
         console.log(error);
@@ -103,48 +104,72 @@ async function getAllEnrolledData(req,res){
 
 }
 
-async function studentProgressAndResult(req,res){
+async function studentProgressAndResult(req, res) {
 
     const courseId = req.params.id;
-    const user = jwt.verify(req.cookies.token,process.env.jwt_secret);
-    const response = await fetchProgressData(courseId,user.id);
+    const user = jwt.verify(req.cookies.token, process.env.jwt_secret);
+    const response = await fetchProgressData(courseId, user.id);
     // console.log(response);
 
     res.status(200).json(response);
-    
+
 }
 
-async function learningCompleted(req,res){
+async function learningCompleted(req, res) {
     const courseId = req.params.id;
-    const user = jwt.verify(req.cookies.token,process.env.jwt_secret);
-    const response = await updateLearningData(user.id,courseId);
-    res.status(200).json({status:'success',message:'Student learning compiletion updated.'});
+    const user = jwt.verify(req.cookies.token, process.env.jwt_secret);
+    const response = await updateLearningData(user.id, courseId);
+    res.status(200).json({ status: 'success', message: 'Learning completion updated.' });
 }
 
-async function quizCompleted(req,res){
+async function quizCompleted(req, res) {
     const courseId = req.params.id;
     const result = req.body.result;
 
-    const user = jwt.verify(req.cookies.token,process.env.jwt_secret);
-    const response = await updateQuizData(user.id,courseId,(+result));
-    res.status(200).json({status:'success',message:'Student Quiz compiletion updated.'});
+    const user = jwt.verify(req.cookies.token, process.env.jwt_secret);
+    const response = await updateQuizData(user.id, courseId, (+result));
+    res.status(200).json({ status: 'success', message: 'Student Quiz compiletion updated.' });
 
 }
 
-async function assignmentCompleted(req,res){
+async function assignmentCompleted(req, res) {
     const courseId = req.params.id;
-    const user = jwt.verify(req.cookies.token,process.env.jwt_secret);
-    const response = await updateAssignmentData(user.id,courseId);
-    res.status(200).json({status:'success',message:'Student Assignment compiletion updated.'});
+    const user = jwt.verify(req.cookies.token, process.env.jwt_secret);
+    const response = await updateAssignmentData(user.id, courseId);
+    res.status(200).json({ status: 'success', message: 'Student Assignment compiletion updated.' });
 }
 
-async function unenrollCourse(req,res){
+async function unenrollCourse(req, res) {
     const courseId = req.params.id;
-    const user = jwt.verify(req.cookies.token,process.env.jwt_secret);
-    const response = await deleteProgressData(courseId,user.id);
+    const user = jwt.verify(req.cookies.token, process.env.jwt_secret);
+    const response = await deleteProgressData(courseId, user.id);
+    res.status(200).json({ status: 'success', message: 'course unenrolled successfully.' });
 }
 
-module.exports={
+async function certificateData(req, res) {
+
+    const user = jwt.verify(req.cookies.token, process.env.jwt_secret);
+    const courseId = req.params.id
+
+    const courseData = await fetchSingleCourse(courseId);
+    const progressData = await fetchProgressData(courseId, user.id);
+
+    if (progressData.learningstatus && progressData.quizstatus && progressData.assignmentstatus) {
+
+        const certificateData = {
+            userId: `user_0000${user.id}`,
+            name: user.username,
+            courseName: courseData.coursename,
+            certificateId: `cert_0000${progressData.id}`
+        };
+
+        res.status(200).json(certificateData);
+    } else {
+        res.status(400).json({ message: 'course was not completed.', status: 'failure' });
+    }
+}
+
+module.exports = {
     nonEnrolledCourses,
     enrollStudent,
     getAllEnrolledData,
@@ -152,5 +177,6 @@ module.exports={
     learningCompleted,
     quizCompleted,
     assignmentCompleted,
-    unenrollCourse
+    unenrollCourse,
+    certificateData
 };

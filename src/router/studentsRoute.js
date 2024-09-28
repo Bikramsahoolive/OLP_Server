@@ -1,7 +1,7 @@
 const express = require('express');
 const StudentRouter = express.Router();
-// const {loginAuth} = require('../controller/authControl');
-const {nonEnrolledCourses,enrollStudent,getAllEnrolledData,studentProgressAndResult,learningCompleted,quizCompleted,assignmentCompleted,unenrollCourse} = require('../controller/studentControl');
+const {nonEnrolledCourses,enrollStudent,getAllEnrolledData,studentProgressAndResult,learningCompleted,
+       quizCompleted,assignmentCompleted,unenrollCourse,certificateData} = require('../controller/studentControl');
 const {validateStudentAuth} = require('../middleware/authValidate');
 
 
@@ -28,5 +28,8 @@ StudentRouter.route('/complete-assignment/:id')
 
 StudentRouter.route('/unenroll/:id')
 .delete(validateStudentAuth, unenrollCourse);
+
+StudentRouter.route('/certificate/:id')
+.get(validateStudentAuth, certificateData);
 
 module.exports = StudentRouter;
