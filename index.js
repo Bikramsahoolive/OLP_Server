@@ -21,7 +21,6 @@ require('./src/config/passport');
 
 app.use(cors({
     origin:process.env.frontend_url,
-    origin:'http://localhost:4200',
     credentials:true
 }));
 

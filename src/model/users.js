@@ -55,9 +55,9 @@ exports.findOne = async (email) => {
 
 exports.updatePass = async (data) => {
     try {
-        const { hashedPassword, id } = data
-        const query = `UPDATE users SET password = $1 WHERE id = $2`;
-        const values = [hashedPassword, id];
+        const { password, email } = data
+        const query = `UPDATE users SET password = $1 WHERE useremail = $2`;
+        const values = [password,email];
         const result = await pool.query(query, values);
         if (result.rowCount === 0) {
             return { success: false, message: "User not found" };
@@ -79,6 +79,20 @@ exports.updateUsertype = async (usertype, useremail) => {
             return { status: false, message: "User not found" };
         }
         return { success: true, message: "Usertype updated successfully" };
+
+    } catch (err) {
+        throw err
+    }
+}
+
+exports.updateUserOtp = async (id,otp) => {
+    try {
+
+        const query = `UPDATE users SET otp = $1 WHERE id = $2`;
+        const values = [otp, id];
+        const result = await pool.query(query, values);
+        
+        return { success: true, message: "OTP set successfully" };
 
     } catch (err) {
         throw err

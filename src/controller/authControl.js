@@ -1,6 +1,7 @@
 let jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const { createUser, getUser, findOne, findUser, updatePass, updateUsertype } = require("../model/users");
+const mailer = require('../config/mailscript');
+const { createUser, getUser, findOne, findUser, updatePass, updateUsertype,updateUserOtp } = require("../model/users");
 
 exports.login = async (req, res) => {
     try {
@@ -63,12 +64,17 @@ exports.createUser = async (req, res) => {
 }
 
 exports.updatePassword = async (req, res) => {
+    const {otp,password,email}=req.body;
     try {
+        const user = await findOne(email);
+
+        if(user.otp !== (+otp))return res.status(400).json({status:'failure',message:"OTP Mismatch"});
+        //update password
         const saltRounds = 10;
-        const hashed = await bcrypt.hash(req.body.newpassword, saltRounds);
+        const hashed = await bcrypt.hash(password, saltRounds);
         let data = {
-            hashedPassword: hashed,
-            id: req.params.id
+            password: hashed,
+            email: email
         }
         const updatemsg = await updatePass(data)
         res.status(200).send(updatemsg)
@@ -90,9 +96,36 @@ exports.logout = (req, res) => {
 exports.findOneUser = async (req, res) => {
     const user = await findOne(req.body.useremail)
     // console.log(user)
+
     if (!user) res.status(400).json({ message: "User not found" });
     else {
-        res.status(200).json({ user: user })
+        let otp = Math.floor(Math.random()*1000000);
+        //update otp
+        updateUserOtp(user.id,otp);
+        const clientMail = {
+            email:req.body.useremail,
+            subject:'OLP Password Reset OTP.',
+            content:`
+            <div style="font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4;">
+  <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
+    <div style="text-align: center; padding-bottom: 20px; border-bottom: 1px solid #eeeeee;">
+      <h1 style="color: #333333; font-size: 24px; margin: 0;">Password Reset Request</h1>
+    </div>
+    <div style="padding: 20px 0; text-align: center;">
+      <p style="font-size: 16px; color: #666666; line-height: 1.5;">Hello ${user.username},</p>
+      <p style="font-size: 16px; color: #666666; line-height: 1.5;">We received a request to reset your password. Please use the OTP below to proceed with your password reset.</p>
+      <p style="font-size: 24px; font-weight: bold; color: #4CAF50; margin: 20px 0;">${otp}</p>
+      <p style="font-size: 16px; color: #666666; line-height: 1.5;">If you did not request a password reset, please ignore this email.</p>
+    </div>
+    <div style="padding-top: 20px; text-align: center; border-top: 1px solid #eeeeee;">
+      <p style="font-size: 14px; color: #999999;">Thank you,<br>The Support Team</p>
+    </div>
+  </div>
+</div>`
+        }
+        mailer.sendMail(clientMail,(result)=>{
+            res.send(result);
+        })
     }
 }
 
