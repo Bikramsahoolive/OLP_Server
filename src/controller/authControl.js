@@ -98,7 +98,7 @@ exports.logout = (req, res) => {
 
 exports.findOneUser = async (req, res) => {
     const data = req.body;
-    const user = await findOne(data.useremail,data.usertype);
+    const user = await findUser(data.useremail,data.usertype);
     // console.log(user)
 
     if (!user) res.status(400).json({ message: "User not found" });

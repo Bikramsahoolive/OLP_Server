@@ -42,7 +42,18 @@ exports.findUser = async (email, type) => {
     }
 }
 
-exports.findOne = async (email,usertype) => {
+exports.findOne = async (email) => {
+    try {
+        const q = `SELECT * FROM users where useremail = $1;`
+        values = [email];
+        const { rows } = await pool.query(q, values)
+        return rows[0]
+    } catch (err) {
+        throw err
+    }
+}
+
+exports.findUser = async (email,usertype) => {
     try {
         const q = `SELECT * FROM users where useremail = $1 AND usertype = $2;`
         values = [email,usertype];
