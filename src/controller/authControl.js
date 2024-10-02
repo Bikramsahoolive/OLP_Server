@@ -64,21 +64,27 @@ exports.createUser = async (req, res) => {
 }
 
 exports.updatePassword = async (req, res) => {
-    const {otp,password,email}=req.body;
+    const {otp,password,email,usertype}=req.body;
+    console.log(req.body);
+    
     try {
-        const user = await findOne(email);
-
+        const user = await findOne(email,usertype);
+        console.log(user);
+        
         if(user.otp !== (+otp))return res.status(400).json({status:'failure',message:"OTP Mismatch"});
         //update password
         const saltRounds = 10;
         const hashed = await bcrypt.hash(password, saltRounds);
         let data = {
             password: hashed,
-            email: email
+            email: email,
+            usertype:usertype
         }
         const updatemsg = await updatePass(data)
+        console.log(updatemsg);
         res.status(200).send(updatemsg)
     } catch (err) {
+        console.log(err.error);
         res.status(500).json({ error: err.message })
     }
 }
@@ -94,7 +100,8 @@ exports.logout = (req, res) => {
 };
 
 exports.findOneUser = async (req, res) => {
-    const user = await findOne(req.body.useremail)
+    const data = req.body;
+    const user = await findOne(data.useremail,data.usertype);
     // console.log(user)
 
     if (!user) res.status(400).json({ message: "User not found" });

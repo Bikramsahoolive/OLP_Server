@@ -42,10 +42,10 @@ exports.findUser = async (email, type) => {
     }
 }
 
-exports.findOne = async (email) => {
+exports.findOne = async (email,usertype) => {
     try {
-        const q = `SELECT * FROM users where useremail = $1;`
-        values = [email]
+        const q = `SELECT * FROM users where useremail = $1 AND usertype = $2;`
+        values = [email,usertype];
         const { rows } = await pool.query(q, values)
         return rows[0]
     } catch (err) {
@@ -55,9 +55,9 @@ exports.findOne = async (email) => {
 
 exports.updatePass = async (data) => {
     try {
-        const { password, email } = data
-        const query = `UPDATE users SET password = $1 WHERE useremail = $2`;
-        const values = [password,email];
+        const { password, email , usertype} = data
+        const query = `UPDATE users SET password = $1 WHERE useremail = $2 AND usertype = $3;`;
+        const values = [password,email,usertype];
         const result = await pool.query(query, values);
         if (result.rowCount === 0) {
             return { success: false, message: "User not found" };
