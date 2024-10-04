@@ -33,7 +33,7 @@ exports.googleLogin = async (req, res) => {
 
         if (user.usertype == 'NA') {
             const data = await updateUsertype(userData.usertype, userData.useremail);
-
+            user.usertype = userData.usertype;
         }
 
         delete user.password;
